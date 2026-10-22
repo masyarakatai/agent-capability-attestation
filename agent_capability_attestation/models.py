@@ -441,6 +441,8 @@ class ValidationResult:
     def add_error(self, msg: str) -> None:
         self.errors.append(msg)
         self.is_valid = False
+        if self.status == STATUS_OK:
+            self.status = STATUS_INVALID
 
     def add_warning(self, msg: str) -> None:
         self.warnings.append(msg)
@@ -498,8 +500,8 @@ class DelegationChain:
             else:
                 # Seed from the full per-attestation verdict (it already runs
                 # check_signature), then layer the chain-level check on top.
-                # add_error() only ever clears is_valid, so the two verdicts
-                # combine rather than overwrite one another.
+                # add_error() preserves any more specific status while making
+                # a previously successful result invalid.
                 result = validator.validate(att)
             if i > 0:
                 parent = self.attestations[i - 1]

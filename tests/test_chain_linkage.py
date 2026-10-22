@@ -31,6 +31,7 @@ from agent_capability_attestation.cli import cli
 from agent_capability_attestation.models import (
     Attestation,
     DelegationChain,
+    STATUS_INVALID,
     _scope_is_subscope,
 )
 
@@ -142,6 +143,17 @@ class TestHopsMustLinkToTheirParent:
         assert not results[3].is_valid
         assert "not the previous hop's subject" in results[3].errors[0]
 
+    def test_linkage_failure_has_an_invalid_status(self):
+        attestations = [
+            Attestation.from_dict(_hop("a", "b", CHILD_SCOPE)),
+            Attestation.from_dict(_hop("wrong", "c", CHILD_SCOPE)),
+        ]
+
+        result = DelegationChain(attestations).validate_monotonicity()[1]
+
+        assert not result.is_valid
+        assert result.status == STATUS_INVALID
+
     def test_a_single_hop_has_no_parent_to_link_to(self, tmp_path):
         """The check applies between hops, so a lone hop is unaffected."""
         path = _write(tmp_path, [_hop("a", "b", PARENT_SCOPE)])
@@ -210,6 +222,18 @@ def test_the_reported_scope_expansion_is_rejected_end_to_end(tmp_path):
 
     assert result.exit_code == 1, result.output
     assert "capability expanded" in result.output
+
+
+def test_scope_failure_has_an_invalid_status():
+    attestations = [
+        Attestation.from_dict(_hop("a", "b", CHILD_SCOPE)),
+        Attestation.from_dict(_hop("b", "c", PARENT_SCOPE)),
+    ]
+
+    result = DelegationChain(attestations).validate_monotonicity()[1]
+
+    assert not result.is_valid
+    assert result.status == STATUS_INVALID
 
 
 def test_a_narrowed_pair_still_exits_zero(tmp_path):

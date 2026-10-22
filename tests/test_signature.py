@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from typing import Optional
 
 import pytest
 from cryptography.hazmat.primitives.asymmetric import ed25519
@@ -14,7 +15,7 @@ from agent_capability_attestation.models import (
 )
 
 
-def _make_attestation(signature: str | None = None) -> Attestation:
+def _make_attestation(signature: Optional[str] = None) -> Attestation:
     return Attestation(
         issuer="agent://planner-v2",
         subject="agent://worker-v3",

@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 
 import pytest
 from cryptography.hazmat.primitives import serialization
@@ -70,7 +71,7 @@ def _signed_body(attestation: Attestation) -> bytes:
 
 
 def _validator(
-    key: ed25519.Ed25519PublicKey | None = None,
+    key: Optional[ed25519.Ed25519PublicKey] = None,
     issuer: str = ISSUER,
     **kwargs,
 ) -> AttestationValidator:

@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 
 import pytest
 from click.testing import CliRunner
@@ -56,7 +57,7 @@ def _write(tmp_path, server: dict, name: str = "mcp.json"):
     return path
 
 
-def _attested(state_hash: str | None = None, *, age: int = 1, ttl_seconds: int = 300, **surface):
+def _attested(state_hash: Optional[str] = None, *, age: int = 1, ttl_seconds: int = 300, **surface):
     """A server entry whose attestation covers ``surface`` (default: SURFACE)."""
     declared = {**SURFACE, **surface}
     attestation = {

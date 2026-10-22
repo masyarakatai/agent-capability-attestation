@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 
 import pytest
 from click.testing import CliRunner
@@ -44,7 +45,7 @@ def _issued(offset_seconds: float = 5) -> str:
     return (datetime.now(timezone.utc) - timedelta(seconds=offset_seconds)).isoformat()
 
 
-def _hop(issuer: str, subject: str, capability: str, issued_at: str | None = None) -> dict:
+def _hop(issuer: str, subject: str, capability: str, issued_at: Optional[str] = None) -> dict:
     """One live hop, issued by ``issuer`` to ``subject``."""
     return {
         "issuer": issuer,

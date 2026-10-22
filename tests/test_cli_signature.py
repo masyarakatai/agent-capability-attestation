@@ -188,6 +188,20 @@ class TestValidateCommand:
         assert result.exit_code == 2
         assert "Traceback" not in result.output
 
+    def test_missing_input_exits_two_without_traceback(self, tmp_path):
+        result = _run("validate", str(tmp_path / "missing.json"))
+
+        assert result.exit_code == 2
+        assert "Traceback" not in result.output
+        assert "does not exist" in result.output
+
+    def test_unreadable_input_exits_two_without_traceback(self, tmp_path):
+        result = _run("validate", str(tmp_path))
+
+        assert result.exit_code == 2
+        assert "Traceback" not in result.output
+        assert "unable to read" in result.output
+
 
 class TestScanCommand:
     def test_forged_attestation_in_a_directory_is_reported_and_fails_the_gate(
@@ -250,6 +264,13 @@ class TestCheckChainCommand:
         result = _run("check-chain", str(path))
 
         assert "signature: UNSIGNED" in result.output
+
+    def test_unreadable_chain_input_exits_two_without_traceback(self, tmp_path):
+        result = _run("check-chain", str(tmp_path))
+
+        assert result.exit_code == 2
+        assert "Traceback" not in result.output
+        assert "unable to read" in result.output
 
 
 class TestCheckMcpCommand:

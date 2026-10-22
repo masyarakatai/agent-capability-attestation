@@ -456,6 +456,9 @@ def _load_json(path: str) -> dict:
     """Load and parse a JSON file."""
     try:
         return json.loads(Path(path).read_text())
+    except OSError as e:
+        click.echo(f"ERROR: unable to read {path}: {e}", err=True)
+        sys.exit(2)
     except json.JSONDecodeError as e:
         click.echo(f"ERROR: invalid JSON in {path}: {e}", err=True)
         sys.exit(2)

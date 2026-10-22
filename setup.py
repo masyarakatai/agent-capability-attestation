@@ -2,11 +2,16 @@
 
 from setuptools import setup, find_packages
 
+
+with open("README.md") as readme:
+    long_description = readme.read()
+
+
 setup(
     name="agent-capability-attestation",
     version="0.1.0",
     description="Detect capability drift and stale attestations in AI agent delegation chains",
-    long_description=open("README.md").read(),
+    long_description=long_description,
     long_description_content_type="text/markdown",
     author="Yunare Maia",
     author_email="yunare@gmail.com",

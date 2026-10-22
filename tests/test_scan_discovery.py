@@ -53,6 +53,26 @@ class TestDiscoveryCoversTheDocumentedNames:
         assert "1 attestations scanned" in result.output, result.output
         assert result.exit_code == 0, result.output
 
+    def test_text_verdicts_identify_their_source_files(self, tmp_path):
+        first = _write(tmp_path, "a.json", _document(subject="agent://first"))
+        second = _write(tmp_path, "b.json", _document(subject="agent://second"))
+
+        result = _scan(tmp_path)
+
+        assert result.exit_code == 0, result.output
+        assert f"{first}: ✓ VALID |" in result.output
+        assert f"{second}: ✓ VALID |" in result.output
+
+    def test_json_verdicts_identify_their_source_files(self, tmp_path):
+        first = _write(tmp_path, "a.json", _document(subject="agent://first"))
+        second = _write(tmp_path, "b.json", _document(subject="agent://second"))
+
+        result = _scan(tmp_path, "--json-output")
+
+        assert result.exit_code == 0, result.output
+        payload = json.loads(result.stdout)
+        assert {entry["file"] for entry in payload} == {str(first), str(second)}
+
     def test_a_plainly_named_agent_file_is_found(self, tmp_path):
         """The issue's ``agents/agent-a.json`` — nothing magic about the name."""
         _write(tmp_path, "agent-a.json", _document())

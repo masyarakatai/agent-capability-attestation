@@ -222,7 +222,7 @@ def scan(
         click.echo(f"ERROR: {message}", err=True)
         sys.exit(1)
 
-    results = []
+    results: list[tuple[Path, ValidationResult]] = []
     # Files that could not be read at all (bad JSON, or a malformed attestation
     # payload). They are kept out of ``results`` — there is no verdict to give —
     # but they must not vanish from the readings: the summary count describes
@@ -243,7 +243,7 @@ def scan(
             data = json.loads(f.read_text())
             att = Attestation.from_dict(data)
             result = validator.validate(att)
-            results.append(result)
+            results.append((f, result))
             if not result.is_valid:
                 all_valid = False
         except Exception as e:
@@ -252,13 +252,13 @@ def scan(
             all_valid = False
 
     if json_output:
-        entries = [_result_to_dict(r) for r in results]
+        entries = [_result_to_dict(r, file=f) for f, r in results]
         entries += [_unreadable_to_dict(f, msg) for f, msg in unreadable]
         click.echo(json.dumps(entries, indent=2))
     else:
-        for result in results:
-            _print_result(result)
-        invalid = [r for r in results if not r.is_valid]
+        for f, result in results:
+            _print_result(result, file=f)
+        invalid = [r for _, r in results if not r.is_valid]
         scanned = len(results) + len(unreadable)
         summary = (
             f"\n{scanned} attestations scanned, "
@@ -502,9 +502,9 @@ def _output_json(result: ValidationResult) -> None:
     click.echo(json.dumps(_result_to_dict(result), indent=2))
 
 
-def _result_to_dict(result: ValidationResult) -> dict:
+def _result_to_dict(result: ValidationResult, file: Optional[Path] = None) -> dict:
     """Convert a ValidationResult to a JSON-serializable dict."""
-    return {
+    output = {
         "issuer": result.attestation.issuer,
         "subject": result.attestation.subject,
         "capability": result.attestation.capability,
@@ -516,6 +516,9 @@ def _result_to_dict(result: ValidationResult) -> dict:
         "errors": result.errors,
         "warnings": result.warnings,
     }
+    if file is not None:
+        output["file"] = str(file)
+    return output
 
 
 _SIGNATURE_LABELS = {
@@ -535,7 +538,7 @@ _VERDICT_LABELS = {
 }
 
 
-def _print_result(result: ValidationResult) -> None:
+def _print_result(result: ValidationResult, file: Optional[Path] = None) -> None:
     """Print a validation result to stdout.
 
     The signature verdict is always printed, so an attestation nobody could
@@ -547,8 +550,9 @@ def _print_result(result: ValidationResult) -> None:
         status = "✓ VALID"
     else:
         status = _VERDICT_LABELS.get(result.status, "✗ INVALID")
+    prefix = f"{file}: " if file is not None else ""
     click.echo(
-        f"{status} | {att.issuer} → {att.subject} | "
+        f"{prefix}{status} | {att.issuer} → {att.subject} | "
         f"{att.capability} (TTL {att.ttl_seconds}s)"
     )
     label = _SIGNATURE_LABELS.get(result.signature_status)

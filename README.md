@@ -1,5 +1,7 @@
 # Agent Capability Attestation
 
+![CI](https://github.com/yunaremaia/agent-capability-attestation/actions/workflows/ci.yml/badge.svg) ![License](https://img.shields.io/github/license/yunaremaia/agent-capability-attestation)
+
 > Detect capability drift and stale attestations in AI agent delegation chains. TTL-based freshness validation for agent-to-agent capability negotiation.
 
 ## The Problem
